@@ -1,0 +1,182 @@
+openapi: '3.0.2'
+info:
+  title: Bookshelf List
+  version: '1.0'
+servers:
+  - url: https://api.server.test/v1
+paths:
+  /login:
+    post:
+      tags:
+      - login
+      summary: authenticate user
+      description: Create user functionality
+      operationId: authenticate
+      requestBody:
+        description: authenticate user
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      responses:
+        default:
+          description: successful operation
+          content: {}
+      x-codegen-request-body-name: body
+  /user:
+    post:
+      tags:
+      - user
+      summary: create user
+      description: Create user functionality
+      operationId: createUser
+      requestBody:
+        description: create user
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      responses:
+        default:
+          description: successful operation
+          content: {}
+      x-codegen-request-body-name: body  
+  /books/{isbn}:
+    get:
+      security:
+        - BearerAuth: []
+      description: Get an individual book
+      parameters:
+        - name: isbn
+          in: path
+          required: true
+          description: isbn of the book
+          schema:
+            type: string
+      responses:
+        '200':
+          description: an individual book
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"            
+  /books:
+    get:
+      security:
+        - BearerAuth: []
+      summary: List all books
+      operationId: listBooks
+      tags:
+        - books
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            format: int32
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            format: int32        
+      responses:
+        '200':
+          description: A paged list of books
+          headers:
+            x-next:
+              description: Link for the next page
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Books"
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      security:
+        - BearerAuth: []
+      summary: Create a book
+      operationId: createBook
+      responses:
+        '201':
+          description: Null response
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+    BearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    Book:
+      type: object
+      required:
+        - isbn
+        - title
+        - author
+      properties:
+        author:
+          type: string
+        country:
+          type: string
+        imageLink:
+          type: string
+        language:
+          type: string
+        link:
+          type: string
+        pages:
+          type: string
+        title:
+          type: string
+        year:
+          type: string
+        isbn:
+          type: string
+          readOnly: true
+    Books:
+      type: array
+      items:
+        $ref: "#/components/schemas/Book"
+    User:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        userId:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+        password:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+
